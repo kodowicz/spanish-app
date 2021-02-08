@@ -1,5 +1,5 @@
-const Query = {
-  users: (root, args, ctx, info) => ctx.prisma.query.users({}, info)
-};
+const UserQuery = require('./UserQuery');
 
-module.exports = Query;
+module.exports = {
+  ...UserQuery,
+};

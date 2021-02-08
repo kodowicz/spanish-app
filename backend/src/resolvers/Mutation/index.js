@@ -1,7 +1,5 @@
-const Mutation = {
-  createUser: (root, args, ctx, info) => {
-    return ctx.prisma.mutation.createUser({ data: { name: args.name } }, info)
-  }
-}
+const LoginMutation = require('./LoginMutation');
 
-module.exports = Mutation;
+module.exports = {
+  ...LoginMutation,
+};
