@@ -3,4 +3,19 @@ type User {
   name: String!
   email: String! @unique
   password: String!
+  draft: DraftSet @relation(link: INLINE)
+}
+
+type DraftSet {
+  id: ID! @id
+  title: String! @default(value: "")
+  author: User
+  terms: [DraftTerm!]!
+}
+
+type DraftTerm {
+  id: ID! @id
+  spanish: String! @default(value: "")
+  english: String! @default(value: "")
+  draft: DraftSet!
 }

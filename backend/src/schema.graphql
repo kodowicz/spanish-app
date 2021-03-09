@@ -8,16 +8,22 @@ type User {
   id: ID!
   name: String!
   email: String!
-  password: String!
+  draft: DraftSet
 }
 
 type Query {
   users: [User!]!
   user: User
+  draftSet: DraftSet
+  draftTerms(draftid: String!): [DraftTerm!]!
 }
 
 type Mutation {
   signup(email: String!, name: String!, password: String!): User!
   signin(email: String!, password: String!): User!
   signout: Message!
+  createDraftSet: DraftSet!
+  updateDraftSet(draftid: String!, title: String!): DraftSet!
+  createDraftTerm(draftid: String!): DraftTerm!
+  updateDraftTerm(id: String!, spanish: String!, english: String!): DraftTerm!
 }
