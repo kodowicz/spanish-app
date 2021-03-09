@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
 const signup = async (root, args, context, info) => {
@@ -13,12 +13,9 @@ const signup = async (root, args, context, info) => {
     },
     info
   });
-  const token = jwt.sign(
-    { userId: user.id },
-    process.env.APP_SECRET
-  );
+  const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
 
-  context.response.cookie("token", token, {
+  context.response.cookie('token', token, {
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 365
   });
@@ -31,21 +28,23 @@ const signin = async (root, { email, password }, context) => {
   if (!user) {
     throw new Error(`No such user found for email ${email}`);
   }
+
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
-    throw new Error(`Invalid password `)
+    throw new Error(`Invalid password`);
   }
+
   const token = jwt.sign({ userId: user.id }, process.env.APP_SECRET);
   context.response.cookie('token', token, {
     httpOnly: true,
     maxAge: 1000 * 60 * 60 * 24 * 365
-  })
+  });
   return user;
 };
 
 const signout = (root, args, context) => {
   context.response.clearCookie('token');
-  return { message: 'logged out' }
+  return { message: 'logged out' };
 };
 
 module.exports = {
