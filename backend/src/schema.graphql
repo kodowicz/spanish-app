@@ -9,6 +9,7 @@ type User {
   name: String!
   email: String!
   draft: DraftSet
+  sets: [Set!]!
 }
 
 type Query {
@@ -16,6 +17,8 @@ type Query {
   user: User
   draftSet: DraftSet
   draftTerms(draftid: String!): [DraftTerm!]!
+  sets: [Set!]!
+  set(id: String!): [Set]!
 }
 
 type Mutation {
@@ -26,4 +29,6 @@ type Mutation {
   updateDraftSet(draftid: String!, title: String!): DraftSet!
   createDraftTerm(draftid: String!): DraftTerm!
   updateDraftTerm(id: String!, spanish: String!, english: String!): DraftTerm!
+  createSet: Set!
+  createTerm(setid: String!, spanish: String!, english: String!): Term!
 }

@@ -1,15 +1,16 @@
 type User {
   id: ID! @id
-  name: String!
+  name: String! @unique
   email: String! @unique
   password: String!
   draft: DraftSet @relation(link: INLINE)
+  sets: [Set!]!
 }
 
 type DraftSet {
   id: ID! @id
   title: String! @default(value: "")
-  author: User
+  author: User!
   terms: [DraftTerm!]!
 }
 
@@ -17,5 +18,22 @@ type DraftTerm {
   id: ID! @id
   spanish: String! @default(value: "")
   english: String! @default(value: "")
+  createdAt: DateTime! @createdAt
   draft: DraftSet!
+}
+
+type Set {
+  id: ID! @id
+  title: String! @default(value: "")
+  amount: Int! @default(value: 0)
+  author: User!
+  terms: [Term!]!
+}
+
+type Term {
+  id: ID! @id
+  spanish: String! @default(value: "")
+  english: String! @default(value: "")
+  createdAt: DateTime! @createdAt
+  set: Set!
 }
