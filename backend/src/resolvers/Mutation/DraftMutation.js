@@ -1,29 +1,41 @@
-const createDraftSet = async (_parent, args, context) => {
-  const userId = context.request.userId;
+const { forwardTo } = require('prisma-binding');
+const { INITTERMS } = require('../../variables');
 
-  if (!userId) {
+const updateDraftSet = forwardTo('prisma');
+const updateDraftTerm = forwardTo('prisma');
+
+const createDraftSet = async (_parent, _args, context) => {
+  const userid = context.request.userid;
+  if (!userid) {
     throw new Error('You must be logged in to do that.');
   }
 
   // check if user already has a DraftSet
-  const isExisting = await context.prisma.exists.User({
+  const exists = await context.prisma.exists.User({
     draft: {
       author: {
-        id: userId
+        id: userid
       }
     }
   });
-
-  if (isExisting) {
+  if (exists) {
     throw new Error('You already have a draft');
   }
+
+  const terms = Array(INITTERMS).fill({
+    spanish: '',
+    english: ''
+  });
 
   const draft = await context.prisma.mutation.createDraftSet({
     data: {
       author: {
         connect: {
-          id: userId
+          id: userid
         }
+      },
+      terms: {
+        create: [...terms]
       }
     }
   });
@@ -31,46 +43,27 @@ const createDraftSet = async (_parent, args, context) => {
   return draft;
 };
 
-const updateDraftSet = async (_parent, args, context) => {
-  const draft = await context.prisma.mutation.updateDraftSet({
-    where: {
-      id: args.draftid
-    },
-    data: {
-      title: args.title
-    }
-  });
-  return draft;
-};
+const createDraftTerm = async (_parent, { where }, context) => {
+  const userid = context.request.userid;
 
-const createDraftTerm = async (_parent, args, context, info) => {
+  const user = await context.prisma.query.user(
+    { where: { id: userid } },
+    `{ draft { terms { id } } }`
+  );
+  if (user.draft.terms.length >= 50) {
+    throw new Error('you reached the limit of terms');
+  }
+
   const term = await context.prisma.mutation.createDraftTerm({
     data: {
       draft: {
         connect: {
-          id: args.draftid
+          id: where.id
         }
       }
-    },
-    info
+    }
   });
 
-  return term;
-};
-
-const updateDraftTerm = async (_parent, args, context, info) => {
-  const term = await context.prisma.mutation.updateDraftTerm(
-    {
-      data: {
-        spanish: args.spanish,
-        english: args.english
-      },
-      where: {
-        id: args.id
-      }
-    },
-    info
-  );
   return term;
 };
 

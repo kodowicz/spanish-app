@@ -6,8 +6,10 @@ export const SIGNIN = gql`
     $password: String!
   ) {
     signin(
-      email: $email,
-      password: $password
+      data: {
+        email: $email,
+        password: $password
+      }
     ) {
       id
     }
@@ -21,9 +23,11 @@ export const SIGNUP = gql`
     $password: String!
   ) {
     signup(
-      email: $email,
-      name: $name,
-      password: $password
+      data: {
+        email: $email,
+        name: $name,
+        password: $password
+      }
     ) {
       id
     }

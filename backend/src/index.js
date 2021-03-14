@@ -11,16 +11,16 @@ server.express.use(cookieParser());
 server.express.use((req, res, next) => {
   const { token } = req.cookies;
   if (token) {
-    const { userId } = jwt.verify(token, process.env.APP_SECRET);
-    req.userId = userId;
+    const { userid } = jwt.verify(token, process.env.APP_SECRET);
+    req.userid = userid;
   }
   next();
 });
 
 server.express.use(async (req, res, next) => {
-  if (!req.userId) return next();
+  if (!req.userid) return next();
   const user = await prisma.query.user(
-    { where: { id: req.userId } },
+    { where: { id: req.userid } },
     '{ id, email, name }'
   );
 

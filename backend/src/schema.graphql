@@ -1,5 +1,20 @@
 # import * from './generated/prisma.graphql'
 
+input UniqueInput {
+  id: ID
+}
+
+input SignUpInput {
+  email: String
+  name: String
+  password: String
+}
+
+input LoginInput {
+  email: String
+  password: String
+}
+
 type Message {
   message: String
 }
@@ -9,26 +24,31 @@ type User {
   name: String!
   email: String!
   draft: DraftSet
-  sets: [Set!]!
+  sets: [Set!]
 }
 
 type Query {
   users: [User!]!
   user: User
   draftSet: DraftSet
-  draftTerms(draftid: String!): [DraftTerm!]!
+  draftTerms(where: DraftTermWhereInput!): [DraftTerm]!
   sets: [Set!]!
-  set(id: String!): [Set]!
+  set(where: UniqueInput!): Set
 }
 
 type Mutation {
-  signup(email: String!, name: String!, password: String!): User!
-  signin(email: String!, password: String!): User!
+  signup(data: SignUpInput!): User!
+  signin(data: LoginInput!): User!
   signout: Message!
   createDraftSet: DraftSet!
-  updateDraftSet(draftid: String!, title: String!): DraftSet!
-  createDraftTerm(draftid: String!): DraftTerm!
-  updateDraftTerm(id: String!, spanish: String!, english: String!): DraftTerm!
+  updateDraftSet(
+    data: DraftSetUpdateInput!
+    where: DraftSetWhereUniqueInput!
+  ): DraftSet!
+  createDraftTerm(where: UniqueInput!): DraftTerm!
+  updateDraftTerm(
+    data: DraftTermUpdateInput!
+    where: DraftTermWhereUniqueInput!
+  ): DraftTerm!
   createSet: Set!
-  createTerm(setid: String!, spanish: String!, english: String!): Term!
 }

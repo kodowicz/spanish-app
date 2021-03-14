@@ -1,34 +1,28 @@
-const draftSet = async (parent, args, context, info) => {
-  const userId = context.request.userId;
+const { forwardTo } = require('prisma-binding');
 
-  if (!userId) {
-    throw new Error('You do not have any draft');
+const draftTerms = forwardTo('prisma');
+
+const draftSet = async (_parent, _args, context) => {
+  const userid = context.request.userid;
+  if (!userid) {
+    throw new Error('You have to be logged');
   }
 
   const user = await context.prisma.query.user(
-    { where: { id: userId } },
+    { where: { id: userid } },
     `{ draft { id }}`
   );
-  const draft = await context.prisma.query.draftSet(
-    {
-      where: {
-        id: user.draft.id
-      }
-    },
-    info
-  );
+  if (!user.draft) {
+    throw new Error(`You don't have any draft`);
+  }
 
-  return draft;
-};
-
-const draftTerms = (parent, args, context, info) => {
-  return context.prisma.query.draftTerms({
+  const draft = await context.prisma.query.draftSet({
     where: {
-      draft: {
-        id: args.draftid
-      }
+      id: user.draft.id
     }
   });
+
+  return draft;
 };
 
 module.exports = {

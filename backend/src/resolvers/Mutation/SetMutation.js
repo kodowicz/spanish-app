@@ -1,8 +1,8 @@
 const formatTerms = require('../../utils/formatTerms');
 const { INITTERMS, TITLELENGTH } = require('../../variables');
 
-const createSet = async (_, args, context, info) => {
-  const userid = context.request.userid || context.request.headers.userid;
+const createSet = async (_, _args, context) => {
+  const userid = context.request.userid;
   if (!userid) {
     throw new Error('You have to be logged in to do that.');
   }
@@ -33,7 +33,7 @@ const createSet = async (_, args, context, info) => {
     throw new Error('This name of the set is taken.');
   }
 
-  const terms = await context.prisma.query.draftTerms(
+  const draftTerms = await context.prisma.query.draftTerms(
     {
       where: {
         draft: {
@@ -41,41 +41,27 @@ const createSet = async (_, args, context, info) => {
         }
       }
     },
-    `{ id english spanish }`
+    `{ english spanish }`
   );
-  const formatedTerms = formatTerms(terms);
+  const formatedTerms = formatTerms(draftTerms);
 
   if (formatedTerms.length < INITTERMS) {
     throw new Error('You have to create at least 4 terms.');
   }
 
-  const set = await context.prisma.mutation.createSet(
-    {
-      data: {
-        title: user.draft.title,
-        amount: formatedTerms.length,
-        author: {
-          connect: {
-            id: userid
-          }
+  const set = await context.prisma.mutation.createSet({
+    data: {
+      title: user.draft.title,
+      amount: formatedTerms.length,
+      author: {
+        connect: {
+          id: userid
         }
+      },
+      terms: {
+        create: [...formatedTerms]
       }
-    },
-    info
-  );
-
-  // create terms to set
-  formatedTerms.map(term => {
-    context.prisma.mutation.createTerm({
-      data: {
-        ...term,
-        set: {
-          connect: {
-            id: set.id
-          }
-        }
-      }
-    });
+    }
   });
 
   await context.prisma.mutation.deleteManyDraftTerms({
