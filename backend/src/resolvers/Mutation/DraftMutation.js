@@ -4,7 +4,7 @@ const { INITTERMS } = require('../../variables');
 const updateDraftSet = forwardTo('prisma');
 const updateDraftTerm = forwardTo('prisma');
 
-const createDraftSet = async (_parent, _args, context) => {
+const createDraftSet = async (_parent, _args, context, info) => {
   const userid = context.request.userid;
   if (!userid) {
     throw new Error('You must be logged in to do that.');
@@ -12,59 +12,65 @@ const createDraftSet = async (_parent, _args, context) => {
 
   // check if user already has a DraftSet
   const exists = await context.prisma.exists.User({
-    draft: {
+    draftSet: {
       author: {
         id: userid
       }
     }
   });
   if (exists) {
-    throw new Error('You already have a draft');
+    throw new Error(`You already have a draft.`);
   }
 
-  const terms = Array(INITTERMS).fill({
+  const draftTerms = Array(INITTERMS).fill({
     spanish: '',
     english: ''
   });
 
-  const draft = await context.prisma.mutation.createDraftSet({
-    data: {
-      author: {
-        connect: {
-          id: userid
+  const draftSet = await context.prisma.mutation.createDraftSet(
+    {
+      data: {
+        author: {
+          connect: {
+            id: userid
+          }
+        },
+        draftTerms: {
+          create: [...draftTerms]
         }
-      },
-      terms: {
-        create: [...terms]
       }
-    }
-  });
+    },
+    info
+  );
 
-  return draft;
+  return draftSet;
 };
 
-const createDraftTerm = async (_parent, { where }, context) => {
+const createDraftTerm = async (_parent, { where }, context, info) => {
   const userid = context.request.userid;
 
   const user = await context.prisma.query.user(
     { where: { id: userid } },
-    `{ draft { terms { id } } }`
+    `{ draftSet { draftTerms { id } } }`
   );
-  if (user.draft.terms.length >= 50) {
-    throw new Error('you reached the limit of terms');
+  if (user.draftSet.draftTerms.length >= 50) {
+    throw new Error(`You've already reached the limit of terms.`);
   }
 
-  const term = await context.prisma.mutation.createDraftTerm({
-    data: {
-      draft: {
-        connect: {
-          id: where.id
+  const draftTerm = await context.prisma.mutation.createDraftTerm(
+    {
+      data: {
+        draftSet: {
+          connect: {
+            id: where.id
+          }
         }
       }
-    }
-  });
+    },
+    info
+  );
 
-  return term;
+  return draftTerm;
 };
 
 module.exports = {
