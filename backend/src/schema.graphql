@@ -1,9 +1,5 @@
 # import * from './generated/prisma.graphql'
 
-input UniqueInput {
-  id: ID
-}
-
 input SignUpInput {
   email: String
   name: String
@@ -23,7 +19,8 @@ type User {
   id: ID!
   name: String!
   email: String!
-  draft: DraftSet
+  draftSet: DraftSet
+  editSet: EditSet
   sets: [Set!]
 }
 
@@ -33,22 +30,28 @@ type Query {
   draftSet: DraftSet
   draftTerms(where: DraftTermWhereInput!): [DraftTerm]!
   sets: [Set!]!
-  set(where: UniqueInput!): Set
+  set(where: SetWhereUniqueInput!): Set
+  editSet: EditSet
 }
 
 type Mutation {
   signup(data: SignUpInput!): User!
   signin(data: LoginInput!): User!
   signout: Message!
+
   createDraftSet: DraftSet!
   updateDraftSet(
     data: DraftSetUpdateInput!
     where: DraftSetWhereUniqueInput!
   ): DraftSet!
-  createDraftTerm(where: UniqueInput!): DraftTerm!
+  deleteDraftSet: DraftSet
+
+  createDraftTerm(where: SetWhereUniqueInput!): DraftTerm!
   updateDraftTerm(
     data: DraftTermUpdateInput!
     where: DraftTermWhereUniqueInput!
   ): DraftTerm!
+  deleteDraftTerm(where: DraftTermWhereUniqueInput!): DraftTerm!
+
   createSet: Set!
 }

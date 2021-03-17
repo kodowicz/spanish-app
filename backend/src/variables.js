@@ -1,2 +1,3 @@
-exports.INITTERMS = 4;
+exports.MINTERMS = 4;
+exports.MAXTERMS = 50;
 exports.TITLELENGTH = 4;

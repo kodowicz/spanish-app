@@ -1,8 +1,9 @@
 const { forwardTo } = require('prisma-binding');
-const { INITTERMS } = require('../../variables');
+const { MINTERMS, MAXTERMS } = require('../../variables');
 
 const updateDraftSet = forwardTo('prisma');
 const updateDraftTerm = forwardTo('prisma');
+const deleteDraftTerm = forwardTo('prisma');
 
 const createDraftSet = async (_parent, _args, context, info) => {
   const userid = context.request.userid;
@@ -22,7 +23,7 @@ const createDraftSet = async (_parent, _args, context, info) => {
     throw new Error(`You already have a draft.`);
   }
 
-  const draftTerms = Array(INITTERMS).fill({
+  const draftTerms = Array(MINTERMS).fill({
     spanish: '',
     english: ''
   });
@@ -46,6 +47,35 @@ const createDraftSet = async (_parent, _args, context, info) => {
   return draftSet;
 };
 
+const deleteDraftSet = async (_parent, _args, context) => {
+  const userid = context.request.userid;
+
+  const user = await context.prisma.query.user(
+    {
+      where: {
+        id: userid
+      }
+    },
+    `{ draftSet { id } }`
+  );
+
+  await context.prisma.mutation.deleteManyDraftTerms({
+    where: {
+      draftSet: {
+        id: user.draftSet.id
+      }
+    }
+  });
+
+  const draftSet = context.prisma.mutation.deleteDraftSet({
+    where: {
+      id: user.draftSet.id
+    }
+  });
+
+  return draftSet;
+};
+
 const createDraftTerm = async (_parent, { where }, context, info) => {
   const userid = context.request.userid;
 
@@ -53,7 +83,7 @@ const createDraftTerm = async (_parent, { where }, context, info) => {
     { where: { id: userid } },
     `{ draftSet { draftTerms { id } } }`
   );
-  if (user.draftSet.draftTerms.length >= 50) {
+  if (user.draftSet.draftTerms.length >= MAXTERMS) {
     throw new Error(`You've already reached the limit of terms.`);
   }
 
@@ -76,6 +106,8 @@ const createDraftTerm = async (_parent, { where }, context, info) => {
 module.exports = {
   createDraftSet,
   updateDraftSet,
+  deleteDraftSet,
   createDraftTerm,
-  updateDraftTerm
+  updateDraftTerm,
+  deleteDraftTerm
 };
