@@ -4,6 +4,7 @@ type User {
   email: String! @unique
   password: String!
   draftSet: DraftSet @relation(link: INLINE)
+  editSet: EditSet @relation(link: INLINE)
   sets: [Set!]!
 }
 
@@ -36,4 +37,21 @@ type Term {
   english: String! @default(value: "")
   createdAt: DateTime! @createdAt
   set: Set!
+}
+
+type EditSet {
+  id: ID! @id
+  title: String!
+  author: User!
+  set: Set!
+  editTerms: [EditTerm!]!
+}
+
+type EditTerm {
+  id: ID! @id
+  spanish: String! @default(value: "")
+  english: String! @default(value: "")
+  createdAt: DateTime! @createdAt
+  editSet: EditSet!
+  term: Term
 }
