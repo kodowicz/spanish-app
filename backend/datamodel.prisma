@@ -5,7 +5,7 @@ type User {
   password: String!
   draftSet: DraftSet @relation(link: INLINE)
   editSet: EditSet @relation(link: INLINE)
-  sets: [Set!]!
+  sets: [Set!]
 }
 
 type DraftSet {
@@ -41,7 +41,7 @@ type Term {
 
 type EditSet {
   id: ID! @id
-  title: String!
+  title: String! @default(value: "")
   author: User!
   set: Set!
   editTerms: [EditTerm!]!

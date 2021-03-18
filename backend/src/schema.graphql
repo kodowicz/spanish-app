@@ -54,13 +54,15 @@ type Mutation {
   deleteDraftTerm(where: DraftTermWhereUniqueInput!): DraftTerm!
 
   createSet: Set!
+  updateSet: Set!
+  deleteSet(where: SetWhereUniqueInput!): Message!
 
   createEditSet(where: SetWhereUniqueInput!): EditSet!
   updateEditSet(
     data: EditSetUpdateInput!
     where: EditSetWhereUniqueInput!
   ): EditSet!
-  deleteEditSet: EditSet!
+  deleteEditSet: Message!
 
   createEditTerm(where: EditSetWhereUniqueInput!): EditTerm!
   updateEditTerm(
