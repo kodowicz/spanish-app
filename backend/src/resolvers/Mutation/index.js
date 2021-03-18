@@ -1,11 +1,11 @@
-const LoginMutation = require('./LoginMutation');
-const DraftMutation = require('./DraftMutation');
+const UserMutation = require('./UserMutation');
+const DraftSetMutation = require('./DraftSetMutation');
 const SetMutation = require('./SetMutation');
 const EditSetMutation = require('./EditSetMutation');
 
 module.exports = {
-  ...LoginMutation,
-  ...DraftMutation,
+  ...UserMutation,
+  ...DraftSetMutation,
   ...SetMutation,
   ...EditSetMutation
 };

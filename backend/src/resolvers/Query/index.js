@@ -1,9 +1,11 @@
 const UserQuery = require('./UserQuery');
-const DraftQuery = require('./DraftQuery');
 const SetQuery = require('./SetQuery');
+const DraftSetQuery = require('./DraftSetQuery');
+const EditSetQuery = require('./EditSetQuery');
 
 module.exports = {
   ...UserQuery,
-  ...DraftQuery,
-  ...SetQuery
+  ...SetQuery,
+  ...DraftSetQuery,
+  ...EditSetQuery
 };

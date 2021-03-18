@@ -6,15 +6,13 @@ const signup = async (_parent, { data }, context, info) => {
   // TODO: validate email
 
   const hashedPass = await bcrypt.hash(data.password, 10);
-  const { password, ...user } = await context.prisma.mutation.createUser(
-    {
-      data: {
-        ...data,
-        password: hashedPass
-      }
+  const { password, ...user } = await context.prisma.mutation.createUser({
+    data: {
+      ...data,
+      password: hashedPass
     },
     info
-  );
+  });
   const token = jwt.sign({ userid: user.id }, process.env.APP_SECRET);
 
   context.response.cookie('token', token, {
