@@ -48,8 +48,40 @@ const signout = (_parent, _args, context) => {
   return { message: 'logged out' };
 };
 
+const updatePassword = async (_parent, { data }, context, info) => {
+  const userid = context.request.userid;
+  if (!userid) {
+    throw new Error(`You must be logged in to do that`);
+  }
+  if (data.password !== data.confirmPassword) {
+    throw new Error(`Passwords don't match`);
+  }
+
+  const user = await context.prisma.query.user(
+    { where: { id: userid } },
+    `{ password }`
+  );
+  const valid = await bcrypt.compare(data.password, user.password);
+  if (valid) {
+    throw new Error(`You can't use the same password`);
+  }
+
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+  const updatedUser = await context.prisma.mutation.updateUser({
+    where: { id: userid },
+    data: {
+      password: hashedPassword
+    }
+  });
+
+  return {
+    message: 'Password updated'
+  };
+};
+
 module.exports = {
   signup,
   signin,
-  signout
+  signout,
+  updatePassword
 };

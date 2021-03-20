@@ -11,6 +11,11 @@ input LoginInput {
   password: String
 }
 
+input PasswordInput {
+  password: String!
+  confirmPassword: String!
+}
+
 type Message {
   message: String
 }
@@ -38,6 +43,7 @@ type Mutation {
   signup(data: SignUpInput!): User!
   signin(data: LoginInput!): User!
   signout: Message!
+  updatePassword(data: PasswordInput!): Message!
 
   createDraftSet: DraftSet!
   updateDraftSet(
