@@ -6,6 +6,7 @@ type User {
   draftSet: DraftSet @relation(link: INLINE)
   editSet: EditSet @relation(link: INLINE)
   sets: [Set!]
+  learnSets: [LearnSet!]
 }
 
 type DraftSet {
@@ -54,4 +55,26 @@ type EditTerm {
   createdAt: DateTime! @createdAt
   editSet: EditSet!
   term: Term
+}
+
+type LearnSet {
+  id: ID! @id
+  title: String!
+  knowledge: Int! @default(value: 0)
+  amount: Int!
+  author: User!
+  set: Set!
+  learnTerms: [LearnTerm!]!
+}
+
+type LearnTerm {
+  id: ID! @id
+  spanish: String! @default(value: "")
+  english: String! @default(value: "")
+  ratio: Int! @default(value: 0)
+  mastered: Boolean! @default(value: false)
+  createdAt: DateTime! @createdAt
+  updatedAt: DateTime @updatedAt
+  learnSet: LearnSet!
+  term: Term!
 }

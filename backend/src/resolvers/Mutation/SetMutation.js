@@ -1,5 +1,5 @@
 const formatTerms = require('../../utils/formatTerms');
-const { MINTERMS, TITLELENGTH } = require('../../variables');
+const { MINTERMS, TITLELENGTH } = require('../../utils/variables');
 
 const createSet = async (_parent, _args, context, info) => {
   const userid = context.request.userid;

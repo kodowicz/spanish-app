@@ -1,6 +1,6 @@
 const { forwardTo } = require('prisma-binding');
 const formatTerms = require('../../utils/formatTerms');
-const { MINTERMS, MAXTERMS, TITLELENGTH } = require('../../variables');
+const { MINTERMS, MAXTERMS, TITLELENGTH } = require('../../utils/variables');
 
 const updateEditSet = forwardTo('prisma');
 const updateEditTerm = forwardTo('prisma');

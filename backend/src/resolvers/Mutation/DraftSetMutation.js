@@ -1,5 +1,5 @@
 const { forwardTo } = require('prisma-binding');
-const { MINTERMS, MAXTERMS } = require('../../variables');
+const { MINTERMS, MAXTERMS } = require('../../utils/variables');
 
 const updateDraftSet = forwardTo('prisma');
 const updateDraftTerm = forwardTo('prisma');
@@ -73,7 +73,9 @@ const deleteDraftSet = async (_parent, _args, context) => {
     }
   });
 
-  return draftSet;
+  return {
+    message: 'Draft set deleted'
+  };
 };
 
 const createDraftTerm = async (_parent, { where }, context, info) => {
