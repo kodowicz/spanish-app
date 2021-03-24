@@ -37,15 +37,44 @@ type User {
 }
 
 type Query {
-  users: [User!]!
   user: User
+
   draftSet: DraftSet
   draftTerms(where: DraftTermWhereInput!): [DraftTerm]!
-  sets: [Set!]!
-  set(where: SetWhereUniqueInput!): Set
-  editSet: EditSet
 
-  learnSet(where: LearnSetWhereUniqueInput!): LearnSet # remove
+  sets(
+    where: SetWhereInput
+    orderBy: SetOrderByInput
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): [Set]!
+  setsConnection(
+    where: SetWhereInput
+    orderBy: SetOrderByInput
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): SetConnection!
+  set(where: SetWhereUniqueInput!): Set
+  terms(
+    where: TermWhereInput
+    orderBy: TermOrderByInput
+    skip: Int
+    after: String
+    before: String
+    first: Int
+    last: Int
+  ): [Term]!
+
+  editSet: EditSet
+  editTerms(where: EditTermWhereInput!): [EditTerm]!
+
+  learnSet(where: LearnSetWhereUniqueInput!): LearnSet
   learnSets(
     where: LearnSetWhereInput
     orderBy: LearnSetOrderByInput

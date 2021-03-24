@@ -1,5 +1,9 @@
+const { forwardTo } = require('prisma-binding');
+
+const editTerms = forwardTo('prisma');
+
 const editSet = async (_parent, _args, context, info) => {
-  const userid = context.request.userid || context.request.headers.userid;
+  const userid = context.request.userid;
   if (!userid) {
     throw new Error('You have to be logged');
   }
@@ -26,4 +30,5 @@ const editSet = async (_parent, _args, context, info) => {
 
 module.exports = {
   editSet
+  editTerms
 };
