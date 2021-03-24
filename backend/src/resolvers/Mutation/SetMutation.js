@@ -1,5 +1,5 @@
 const formatTerms = require('../../utils/formatTerms');
-const { MINTERMS, TITLELENGTH } = require('../../utils/variables');
+const { MAXRATIO, MINTERMS, TITLELENGTH } = require('../../utils/variables');
 
 const createSet = async (_parent, _args, context, info) => {
   const userid = context.request.userid;
@@ -146,6 +146,14 @@ const updateSet = async (_parent, _args, context, info) => {
       })
   );
 
+  const termsToUpsert = formatedTerms.filter(editTerm => {
+    if (!editTerm.term) return editTerm;
+    const { spanish, english } = editTerm.term;
+    if (spanish !== editTerm.spanish || english !== editTerm.english) {
+      return editTerm;
+    }
+  });
+
   const learnSetsToUpdate = await context.prisma.query.learnSets(
     {
       where: {
@@ -205,7 +213,7 @@ const updateSet = async (_parent, _args, context, info) => {
 
   const deleteManyTerms = termsToDelete.map(term => ({ id: term.id }));
 
-  const upsertManyTerms = formatedTerms.map(editTerm => {
+  const upsertManyTerms = termsToUpsert.map(editTerm => {
     const { id, term, ...data } = editTerm;
     const termid = (term && term.id) || '';
 
@@ -313,6 +321,39 @@ const updateSet = async (_parent, _args, context, info) => {
         id: user.editSet.set.id
       }
     },
+    `{
+      id
+      learnSets {
+        id
+        learnTerms {
+          ratio
+        }
+      }
+    }`
+  );
+
+  const updateLearnSetsKnowledge = set.learnSets.map(({ id, learnTerms }) => {
+    const amount = formatedTerms.length;
+    const sumRatio = learnTerms.reduce((sum, { ratio }) => sum + ratio, 0);
+    const knowledge = Math.round((sumRatio / (amount * MAXRATIO)) * 100);
+
+    return {
+      where: { id },
+      data: { knowledge }
+    };
+  });
+
+  const updatedSet = await context.prisma.mutation.updateSet(
+    {
+      data: {
+        learnSets: {
+          update: updateLearnSetsKnowledge
+        }
+      },
+      where: {
+        id: user.editSet.set.id
+      }
+    },
     info
   );
 
@@ -330,7 +371,7 @@ const updateSet = async (_parent, _args, context, info) => {
     }
   });
 
-  return set;
+  return updatedSet;
 };
 
 const deleteSet = async (_parent, { where }, context) => {
