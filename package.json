@@ -1,0 +1,13 @@
+{
+  "name": "spanish-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "lerna": "^4.0.0"
+  },
+  "scripts": {
+    "dev": "lerna bootstrap && lerna run dev --parallel"
+  },
+  "author": "Anna Kotowicz"
+}
