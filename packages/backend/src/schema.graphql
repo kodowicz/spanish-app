@@ -83,7 +83,7 @@ type Query {
     before: String
     first: Int
     last: Int
-  ): [LearnSet]!
+  ): [LearnSet]
   learnSetsConnection(
     where: LearnSetWhereInput
     orderBy: LearnSetOrderByInput
