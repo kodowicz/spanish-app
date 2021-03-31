@@ -1,8 +1,21 @@
 import gql from 'graphql-tag';
 
 export const SETS = gql`
-  query SETS {
-    sets {
+  query SETS($userid: ID) {
+    sets(where: { learnSets_every: { author: { id_not: $userid } } }) {
+      id
+      title
+      author {
+        id
+        name
+      }
+    }
+  }
+`;
+
+export const SET = gql`
+  query SET($setid: ID!) {
+    set(where: { id: $setid }) {
       id
       title
       amount
@@ -13,15 +26,12 @@ export const SETS = gql`
   }
 `;
 
-export const OTHER_SETS = gql`
-  query OTHER_SETS($userid: ID!) {
-    sets(where: { learnSets_every: { author: { id_not: $userid } } }) {
+export const SORTED_TERMS = gql`
+  query SORTED_TERMS($setid: ID!, $sortTerms: TermOrderByInput) {
+    terms(orderBy: $sortTerms, where: { set: { id: $setid } }) {
       id
-      title
-      author {
-        id
-        name
-      }
+      spanish
+      english
     }
   }
 `;

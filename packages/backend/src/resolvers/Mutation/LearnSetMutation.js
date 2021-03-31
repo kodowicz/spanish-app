@@ -1,8 +1,6 @@
 const { forwardTo } = require('prisma-binding');
 const calculateAccomplishment = require('../../utils/calculateAccomplishment');
 
-const deleteLearnSet = forwardTo('prisma');
-
 const createLearnSet = async (_parent, { where }, context, info) => {
   const userid = context.request.userid;
   if (!userid) {
@@ -12,6 +10,9 @@ const createLearnSet = async (_parent, { where }, context, info) => {
   const exists = await context.prisma.exists.LearnSet({
     set: {
       id: where.id
+    },
+    author: {
+      id: userid
     }
   });
   if (exists) {
@@ -60,6 +61,27 @@ const createLearnSet = async (_parent, { where }, context, info) => {
         learnTerms: {
           create: learnTerms
         }
+      }
+    },
+    info
+  );
+
+  return learnSet;
+};
+
+const deleteLearnSet = async (_parent, { where }, context, info) => {
+  await context.prisma.mutation.deleteManyLearnTerms({
+    where: {
+      learnSet: {
+        id: where.id
+      }
+    }
+  });
+
+  const learnSet = context.prisma.mutation.deleteLearnSet(
+    {
+      where: {
+        id: where.id
       }
     },
     info

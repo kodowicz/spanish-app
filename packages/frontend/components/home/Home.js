@@ -3,22 +3,29 @@ import Link from 'next/link';
 import { useQuery } from '@apollo/client';
 import query from '../../graphql/query/';
 
-const Home = ({ user }) => {
+const Home = ({ userid }) => {
   return (
     <>
       <h1>Are you ready for a new dose of words?</h1>
-      {user ? <UserSetsList userid={user.id} /> : <AllSetsList />}
+      {userid ? <StudiedSetsList userid={userid} /> : <AllSetsList />}
     </>
   );
 };
 
-const UserSetsList = ({ userid }) => {
+const StudiedSetsList = ({ userid }) => {
   const learnSets = useQuery(query.LEARN_SETS);
-  const otherSets = useQuery(query.OTHER_SETS, {
+  const otherSets = useQuery(query.SETS, {
     variables: { userid }
   });
 
-  if (learnSets.loading || otherSets.loading) return <p>...loading sets</p>;
+  if (learnSets.loading || otherSets.loading) {
+    return (
+      <div>
+        <p>...loading studied sets</p>
+        <p>...loading other available sets</p>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -40,10 +47,10 @@ const SetsList = ({ title, sets }) => (
     <p>{title}</p>
     {sets.map(set => {
       const studying = Number.isInteger(set.knowledge);
-
+      const setPath = studying ? `/study/${set.id}` : `/set-details/${set.id}`;
       return (
         <div key={set.id}>
-          <Link href={`/set/${set.id}`}>
+          <Link href={setPath}>
             <a>
               <div>
                 <span>{set.title}</span>
