@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Router from 'next/router';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import query from '../../graphql/query/';
+import mutation from '../../graphql/mutation/';
 
 const Set = ({ setid }) => {
   const { data, loading } = useQuery(query.SET, {
@@ -15,8 +16,22 @@ const Set = ({ setid }) => {
     <div>
       <h1>{title}</h1>
       <p>{author.name}</p>
-      <button>learn set</button>
+      <Buttons setid={setid} />
       <Terms setid={setid} />
+    </div>
+  );
+};
+
+const Buttons = ({ setid }) => {
+  const [createLearnSet, { loading }] = useMutation(mutation.CREATE_LEARN_SET, {
+    variables: { setid },
+    onCompleted: ({ createLearnSet: { id } }) => Router.push(`/learn/${id}`)
+  });
+
+  if (loading) return <p>...processing action</p>;
+  return (
+    <div>
+      <button onClick={() => createLearnSet()}>learn set</button>
     </div>
   );
 };

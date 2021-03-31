@@ -1,7 +1,9 @@
-import * as login from './loginMutation';
+import * as user from './userMutation';
+import * as learnSet from './learnSetMutation';
 
 const mutation = {
-  ...login,
-}
+  ...user,
+  ...learnSet
+};
 
 export default mutation;

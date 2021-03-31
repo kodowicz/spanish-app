@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import Router from 'next/router';
-import { useQuery } from '@apollo/client';
+import { useQuery, useMutation } from '@apollo/client';
 import query from '../../graphql/query/';
+import mutation from '../../graphql/mutation/';
 
 const UserSet = ({ setid, userid }) => {
   const { data, loading } = useQuery(query.LEARN_SET, {
@@ -17,13 +18,22 @@ const UserSet = ({ setid, userid }) => {
       <h1>{learnSet.title}</h1>
       <p>{learnSet.author.name}</p>
       <p>{learnSet.knowledge}%</p>
-      <Buttons owner={owner} setid={setid} />
+      <Buttons owner={owner} setid={setid} userid={userid} />
       <Terms setid={setid} />
     </div>
   );
 };
 
-const Buttons = ({ owner, setid }) => {
+const Buttons = ({ owner, setid, userid }) => {
+  const [deleteLearnSet, { loading }] = useMutation(mutation.DELETE_LEARN_SET, {
+    variables: { setid },
+    refetchQueries: [
+      { query: query.LEARN_SETS },
+      { query: query.SETS, variables: { userid } }
+    ],
+    onCompleted: () => Router.push('/')
+  });
+
   const userSet = (
     <div>
       <button onClick={() => Router.push(`/edit/${setid}`)}>edit set</button>
@@ -33,11 +43,12 @@ const Buttons = ({ owner, setid }) => {
 
   const studySet = (
     <div>
-      <button>remove set</button>
+      <button onClick={() => deleteLearnSet()}>remove set</button>
       <button onClick={() => Router.push(`/learn/${setid}`)}>study set</button>
     </div>
   );
 
+  if (loading) return <p>...processing action</p>;
   if (owner) return userSet;
   return studySet;
 };
