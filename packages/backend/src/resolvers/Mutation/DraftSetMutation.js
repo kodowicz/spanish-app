@@ -1,7 +1,6 @@
 const { forwardTo } = require('prisma-binding');
 const { MINTERMS, MAXTERMS } = require('../../utils/variables');
 
-const updateDraftSet = forwardTo('prisma');
 const updateDraftTerm = forwardTo('prisma');
 const deleteDraftTerm = forwardTo('prisma');
 
@@ -47,7 +46,31 @@ const createDraftSet = async (_parent, _args, context, info) => {
   return draftSet;
 };
 
-const deleteDraftSet = async (_parent, _args, context) => {
+const updateDraftSet = async (_parent, { data }, context, info) => {
+  const userid = context.request.userid;
+  if (!userid) {
+    throw new Error('You must be logged in to do that.');
+  }
+
+  const user = await context.prisma.query.user(
+    { where: { id: userid } },
+    `{ draftSet { id } }`
+  );
+
+  const draftSet = await context.prisma.mutation.updateDraftSet(
+    {
+      where: {
+        id: user.draftSet.id
+      },
+      data
+    },
+    info
+  );
+
+  return draftSet;
+};
+
+const deleteDraftSet = async (_parent, _args, context, info) => {
   const userid = context.request.userid;
 
   const user = await context.prisma.query.user(
@@ -67,15 +90,34 @@ const deleteDraftSet = async (_parent, _args, context) => {
     }
   });
 
-  const draftSet = context.prisma.mutation.deleteDraftSet({
+  context.prisma.mutation.deleteDraftSet({
     where: {
       id: user.draftSet.id
     }
   });
 
-  return {
-    message: 'Draft set deleted'
-  };
+  const draftTerms = Array(MINTERMS).fill({
+    spanish: '',
+    english: ''
+  });
+
+  const draftSet = await context.prisma.mutation.createDraftSet(
+    {
+      data: {
+        author: {
+          connect: {
+            id: userid
+          }
+        },
+        draftTerms: {
+          create: [...draftTerms]
+        }
+      }
+    },
+    info
+  );
+
+  return draftSet;
 };
 
 const createDraftTerm = async (_parent, { where }, context, info) => {
@@ -83,7 +125,7 @@ const createDraftTerm = async (_parent, { where }, context, info) => {
 
   const user = await context.prisma.query.user(
     { where: { id: userid } },
-    `{ draftSet { draftTerms { id } } }`
+    `{ draftSet { id draftTerms { id } } }`
   );
   if (user.draftSet.draftTerms.length >= MAXTERMS) {
     throw new Error(`You've already reached the limit of terms.`);
@@ -94,7 +136,7 @@ const createDraftTerm = async (_parent, { where }, context, info) => {
       data: {
         draftSet: {
           connect: {
-            id: where.id
+            id: user.draftSet.id
           }
         }
       }

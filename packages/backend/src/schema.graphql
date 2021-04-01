@@ -40,7 +40,7 @@ type Query {
   user: User
 
   draftSet: DraftSet
-  draftTerms(where: DraftTermWhereInput!): [DraftTerm]!
+  draftTerms: [DraftTerm]!
 
   sets(
     where: SetWhereInput
@@ -112,13 +112,10 @@ type Mutation {
   updatePassword(data: PasswordInput!): Message!
 
   createDraftSet: DraftSet!
-  updateDraftSet(
-    data: DraftSetUpdateInput!
-    where: DraftSetWhereUniqueInput!
-  ): DraftSet!
-  deleteDraftSet: Message!
+  updateDraftSet(data: DraftSetUpdateInput!): DraftSet!
+  deleteDraftSet: DraftSet!
 
-  createDraftTerm(where: SetWhereUniqueInput!): DraftTerm!
+  createDraftTerm: DraftTerm!
   updateDraftTerm(
     data: DraftTermUpdateInput!
     where: DraftTermWhereUniqueInput!

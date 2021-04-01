@@ -27,13 +27,6 @@ const createSet = async (_parent, _args, context, info) => {
     throw new Error('The title is too short');
   }
 
-  const exists = await context.prisma.exists.Set({
-    title: user.draftSet.title
-  });
-  if (exists) {
-    throw new Error('This name of the set is taken');
-  }
-
   const draftTerms = await context.prisma.query.draftTerms(
     {
       where: {
@@ -65,16 +58,6 @@ const createSet = async (_parent, _args, context, info) => {
     },
     info
   );
-
-  await context.prisma.mutation.deleteManyDraftTerms({
-    where: {
-      draftSet: { id: user.draftSet.id }
-    }
-  });
-
-  context.prisma.mutation.deleteDraftSet({
-    where: { id: user.draftSet.id }
-  });
 
   return set;
 };
@@ -121,15 +104,6 @@ const updateSet = async (_parent, _args, context, info) => {
   }
   if (user.editSet.title.length < TITLELENGTH) {
     throw new Error('The title is too short');
-  }
-
-  // check other titles than this one
-  const exists = await context.prisma.exists.Set({
-    title: user.editSet.title,
-    id_not: user.editSet.set.id
-  });
-  if (exists) {
-    throw new Error('This name of the set is taken');
   }
 
   const formatedTerms = formatTerms(user.editSet.editTerms);

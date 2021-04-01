@@ -1,15 +1,29 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const { MINTERMS } = require('../../utils/variables');
 
 const signup = async (_parent, { data }, context, info) => {
   data.email = data.email.toLowerCase();
   // TODO: validate email
 
   const hashedPass = await bcrypt.hash(data.password, 10);
+
+  const draftTerms = Array(MINTERMS).fill({
+    spanish: '',
+    english: ''
+  });
+
   const { password, ...user } = await context.prisma.mutation.createUser({
     data: {
       ...data,
-      password: hashedPass
+      password: hashedPass,
+      draftSet: {
+        create: {
+          draftTerms: {
+            create: draftTerms
+          }
+        }
+      }
     },
     info
   });

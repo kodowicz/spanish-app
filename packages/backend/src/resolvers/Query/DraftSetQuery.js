@@ -1,7 +1,3 @@
-const { forwardTo } = require('prisma-binding');
-
-const draftTerms = forwardTo('prisma');
-
 const draftSet = async (_parent, _args, context, info) => {
   const userid = context.request.userid;
   if (!userid) {
@@ -26,6 +22,28 @@ const draftSet = async (_parent, _args, context, info) => {
   );
 
   return draftSet;
+};
+
+const draftTerms = async (_parent, _args, context, info) => {
+  const userid = context.request.userid;
+  if (!userid) {
+    throw new Error('You have to be logged');
+  }
+
+  const draftTerms = await context.prisma.query.draftTerms(
+    {
+      where: {
+        draftSet: {
+          author: {
+            id: userid
+          }
+        }
+      }
+    },
+    info
+  );
+
+  return draftTerms;
 };
 
 module.exports = {
