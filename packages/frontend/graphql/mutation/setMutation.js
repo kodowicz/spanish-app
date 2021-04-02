@@ -8,3 +8,11 @@ export const CREATE_SET = gql`
     }
   }
 `;
+
+export const UPDATE_SET = gql`
+  mutation UPDATE_SET {
+    updateSet {
+      id
+    }
+  }
+`;

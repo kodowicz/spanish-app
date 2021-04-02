@@ -4,7 +4,7 @@ import { useQuery, useMutation } from '@apollo/client';
 import query from '../../graphql/query/';
 import mutation from '../../graphql/mutation/';
 
-const UserSet = ({ setid, userid }) => {
+const StudySet = ({ setid, userid }) => {
   const { data, loading } = useQuery(query.LEARN_SET, {
     variables: { setid }
   });
@@ -13,18 +13,23 @@ const UserSet = ({ setid, userid }) => {
 
   const { learnSet } = data;
   const owner = learnSet.set.author.id === userid;
+
   return (
     <div>
       <h1>{learnSet.title}</h1>
       <p>{learnSet.author.name}</p>
       <p>{learnSet.knowledge}%</p>
-      <Buttons owner={owner} setid={setid} userid={userid} />
+      {owner ? (
+        <OwnerButtons setid={setid} editid={learnSet.set.id} />
+      ) : (
+        <StudyButtons setid={setid} userid={userid} />
+      )}
       <Terms setid={setid} />
     </div>
   );
 };
 
-const Buttons = ({ owner, setid, userid }) => {
+const StudyButtons = ({ setid, userid }) => {
   const [deleteLearnSet, { loading }] = useMutation(mutation.DELETE_LEARN_SET, {
     variables: { setid },
     refetchQueries: [
@@ -34,23 +39,30 @@ const Buttons = ({ owner, setid, userid }) => {
     onCompleted: () => Router.push('/')
   });
 
-  const userSet = (
-    <div>
-      <button onClick={() => Router.push(`/edit/${setid}`)}>edit set</button>
-      <button onClick={() => Router.push(`/learn/${setid}`)}>study set</button>
-    </div>
-  );
+  if (loading) return <p>...removing learn set</p>;
 
-  const studySet = (
+  return (
     <div>
       <button onClick={() => deleteLearnSet()}>remove set</button>
       <button onClick={() => Router.push(`/learn/${setid}`)}>study set</button>
     </div>
   );
+};
 
-  if (loading) return <p>...processing action</p>;
-  if (owner) return userSet;
-  return studySet;
+const OwnerButtons = ({ setid, editid }) => {
+  const [createEditSet, { loading }] = useMutation(mutation.CREATE_EDIT_SET, {
+    variables: { setid: editid },
+    onCompleted: () => Router.push(`/edit/${setid}`)
+  });
+
+  if (loading) return <p>...creating edit set</p>;
+
+  return (
+    <div>
+      <button onClick={() => createEditSet()}>edit set</button>
+      <button onClick={() => Router.push(`/learn/${setid}`)}>study set</button>
+    </div>
+  );
 };
 
 const Terms = ({ setid }) => {
@@ -80,4 +92,4 @@ const Terms = ({ setid }) => {
   );
 };
 
-export default UserSet;
+export default StudySet;

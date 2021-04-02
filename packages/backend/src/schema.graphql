@@ -72,7 +72,7 @@ type Query {
   ): [Term]!
 
   editSet: EditSet
-  editTerms(where: EditTermWhereInput!): [EditTerm]!
+  editTerms: [EditTerm]!
 
   learnSet(where: LearnSetWhereUniqueInput!): LearnSet
   learnSets(
@@ -127,13 +127,10 @@ type Mutation {
   deleteSet(where: SetWhereUniqueInput!): Message!
 
   createEditSet(where: SetWhereUniqueInput!): EditSet!
-  updateEditSet(
-    data: EditSetUpdateInput!
-    where: EditSetWhereUniqueInput!
-  ): EditSet!
+  updateEditSet(data: EditSetUpdateInput!): EditSet!
   deleteEditSet: Message!
 
-  createEditTerm(where: EditSetWhereUniqueInput!): EditTerm!
+  createEditTerm: EditTerm!
   updateEditTerm(
     data: EditTermUpdateInput!
     where: EditTermWhereUniqueInput!

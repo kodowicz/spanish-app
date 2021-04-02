@@ -2,7 +2,6 @@ const { forwardTo } = require('prisma-binding');
 const formatTerms = require('../../utils/formatTerms');
 const { MINTERMS, MAXTERMS, TITLELENGTH } = require('../../utils/variables');
 
-const updateEditSet = forwardTo('prisma');
 const updateEditTerm = forwardTo('prisma');
 const deleteEditTerm = forwardTo('prisma');
 
@@ -74,6 +73,30 @@ const createEditSet = async (_parent, { where }, context, info) => {
           create: createManyEditTerm
         }
       }
+    },
+    info
+  );
+
+  return editSet;
+};
+
+const updateEditSet = async (_parent, { data }, context, info) => {
+  const userid = context.request.userid;
+  if (!userid) {
+    throw new Error('You must be logged in to do that.');
+  }
+
+  const user = await context.prisma.query.user(
+    { where: { id: userid } },
+    `{ editSet { id } }`
+  );
+
+  const editSet = await context.prisma.mutation.updateEditSet(
+    {
+      where: {
+        id: user.editSet.id
+      },
+      data
     },
     info
   );
