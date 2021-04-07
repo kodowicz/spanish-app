@@ -13,6 +13,19 @@ export const SETS = gql`
   }
 `;
 
+export const SEARCH_SETS = gql`
+  query SEARCH_SETS($value: String!) {
+    sets(where: { title_contains: $value }) {
+      id
+      title
+      amount
+      author {
+        name
+      }
+    }
+  }
+`;
+
 export const SET = gql`
   query SET($setid: ID!) {
     set(where: { id: $setid }) {
