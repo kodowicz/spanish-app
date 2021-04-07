@@ -7,7 +7,7 @@ import mutation from '../../graphql/mutation/';
 const EditSet = ({ setid }) => {
   const [title, setTitle] = useState('');
 
-  const { loading } = useQuery(query.EDIT_SET, {
+  const { data, loading } = useQuery(query.EDIT_SET, {
     fetchPolicy: 'network-only',
     onCompleted: ({ editSet }) => setTitle(editSet.title)
   });
@@ -28,6 +28,13 @@ const EditSet = ({ setid }) => {
       }
     ],
     onCompleted: () => Router.push(`/study/${setid}`)
+  });
+  const [deleteSet, deleteSetPayload] = useMutation(mutation.DELETE_SET, {
+    variables: {
+      setid: data?.editSet?.set?.id
+    },
+    refetchQueries: [{ query: query.LEARN_SETS }],
+    onCompleted: () => Router.push('/')
   });
 
   function handleUpdateEditSet() {
@@ -51,6 +58,7 @@ const EditSet = ({ setid }) => {
   return (
     <>
       {updateSetPayload.loading && <p>updating the set...</p>}
+      {deleteSetPayload.loading && <p>deleting the set...</p>}
       <h1>edit set</h1>
       <input
         value={title}
@@ -58,6 +66,7 @@ const EditSet = ({ setid }) => {
         onBlur={handleUpdateEditSet}
       />
       <div>
+        <button onClick={() => deleteSet()}>delete</button>
         <button onClick={handleUpdateSet}>save</button>
       </div>
       <EditTerms />

@@ -5,6 +5,9 @@ export const EDIT_SET = gql`
     editSet {
       id
       title
+      set {
+        id
+      }
     }
   }
 `;

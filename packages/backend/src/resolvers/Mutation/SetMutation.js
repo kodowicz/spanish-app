@@ -364,6 +364,43 @@ const deleteSet = async (_parent, { where }, context) => {
     throw new Error(`You're not permitted to delete sets you do not own`);
   }
 
+  const user = await context.prisma.query.user(
+    { where: { id: userid } },
+    `{ editSet { id } }`
+  );
+
+  await context.prisma.mutation.deleteManyEditTerms({
+    where: {
+      editSet: {
+        id: user.editSet.id
+      }
+    }
+  });
+
+  await context.prisma.mutation.deleteEditSet({
+    where: {
+      id: user.editSet.id
+    }
+  });
+
+  await context.prisma.mutation.deleteManyLearnTerms({
+    where: {
+      learnSet: {
+        set: {
+          id: where.id
+        }
+      }
+    }
+  });
+
+  await context.prisma.mutation.deleteManyLearnSets({
+    where: {
+      set: {
+        id: where.id
+      }
+    }
+  });
+
   await context.prisma.mutation.deleteManyTerms({
     where: {
       set: {

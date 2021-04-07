@@ -16,3 +16,11 @@ export const UPDATE_SET = gql`
     }
   }
 `;
+
+export const DELETE_SET = gql`
+  mutation DELETE_SET($setid: ID!) {
+    deleteSet(where: { id: $setid }) {
+      message
+    }
+  }
+`;
