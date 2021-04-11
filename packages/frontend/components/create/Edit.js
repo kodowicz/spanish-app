@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Router from 'next/router';
 import { useQuery, useMutation } from '@apollo/client';
 import query from '../../graphql/query/';
@@ -13,6 +13,7 @@ const EditSet = ({ setid }) => {
   });
 
   const [updateEditSet] = useMutation(mutation.UPDATE_EDIT_SET);
+  const [deleteEditSet] = useMutation(mutation.DELETE_EDIT_SET);
   const [updateSet, updateSetPayload] = useMutation(mutation.UPDATE_SET, {
     refetchQueries: [
       {
@@ -36,6 +37,10 @@ const EditSet = ({ setid }) => {
     refetchQueries: [{ query: query.LEARN_SETS }],
     onCompleted: () => Router.push('/')
   });
+
+  useEffect(() => {
+    return () => deleteEditSet();
+  }, []);
 
   function handleUpdateEditSet() {
     updateEditSet({

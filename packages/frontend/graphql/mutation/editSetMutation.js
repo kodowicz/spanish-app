@@ -23,6 +23,14 @@ export const UPDATE_EDIT_SET = gql`
   }
 `;
 
+export const DELETE_EDIT_SET = gql`
+  mutation DELETE_EDIT_SET {
+    deleteEditSet {
+      message
+    }
+  }
+`;
+
 export const CREATE_EDIT_TERM = gql`
   mutation CREATE_EDIT_TERM {
     createEditTerm {

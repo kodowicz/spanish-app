@@ -117,7 +117,9 @@ const deleteEditSet = async (_parent, _args, context) => {
   );
 
   if (!user.editSet) {
-    throw new Error(`There's no edits to delete`);
+    return {
+      message: `There's no changes to delete`
+    };
   }
 
   await context.prisma.mutation.deleteManyEditTerms({

@@ -331,20 +331,6 @@ const updateSet = async (_parent, _args, context, info) => {
     info
   );
 
-  await context.prisma.mutation.deleteManyEditTerms({
-    where: {
-      editSet: {
-        id: user.editSet.id
-      }
-    }
-  });
-
-  context.prisma.mutation.deleteEditSet({
-    where: {
-      id: user.editSet.id
-    }
-  });
-
   return updatedSet;
 };
 
@@ -368,20 +354,6 @@ const deleteSet = async (_parent, { where }, context) => {
     { where: { id: userid } },
     `{ editSet { id } }`
   );
-
-  await context.prisma.mutation.deleteManyEditTerms({
-    where: {
-      editSet: {
-        id: user.editSet.id
-      }
-    }
-  });
-
-  await context.prisma.mutation.deleteEditSet({
-    where: {
-      id: user.editSet.id
-    }
-  });
 
   await context.prisma.mutation.deleteManyLearnTerms({
     where: {
