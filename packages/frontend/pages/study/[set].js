@@ -3,7 +3,7 @@ import User from '../../components/User';
 
 const StudySetPage = ({ query }) => (
   <User>
-    {({ data }) => <StudySet setid={query.set} userid={data.user?.id} />}
+    {({ data }) => <StudySet learnid={query.set} userid={data.user?.id} />}
   </User>
 );
 

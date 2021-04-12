@@ -31,7 +31,7 @@ type User {
   name: String!
   email: String!
   draftSet: DraftSet
-  editSet: EditSet
+  editSet: [EditSet!]
   sets: [Set!]
   learnSets: [LearnSet!]
 }
@@ -71,8 +71,8 @@ type Query {
     last: Int
   ): [Term]!
 
-  editSet: EditSet
-  editTerms: [EditTerm]!
+  editSet(where: EditSetWhereUniqueInput): EditSet
+  editTerms(where: EditTermWhereInput): [EditTerm]!
 
   learnSet(where: LearnSetWhereUniqueInput!): LearnSet
   learnSets(
@@ -123,14 +123,17 @@ type Mutation {
   deleteDraftTerm(where: DraftTermWhereUniqueInput!): DraftTerm!
 
   createSet: Set!
-  updateSet: Set!
+  updateSet(where: SetWhereUniqueInput!): Set!
   deleteSet(where: SetWhereUniqueInput!): Message!
 
   createEditSet(where: SetWhereUniqueInput!): EditSet!
-  updateEditSet(data: EditSetUpdateInput!): EditSet!
-  deleteEditSet: Message!
+  updateEditSet(
+    where: EditSetWhereUniqueInput!
+    data: EditSetUpdateInput!
+  ): EditSet!
+  deleteEditSet(where: EditSetWhereUniqueInput!): Message!
 
-  createEditTerm: EditTerm!
+  createEditTerm(where: EditSetWhereUniqueInput!): EditTerm!
   updateEditTerm(
     data: EditTermUpdateInput!
     where: EditTermWhereUniqueInput!
@@ -139,6 +142,7 @@ type Mutation {
 
   createLearnSet(where: SetWhereUniqueInput!): LearnSet!
   deleteLearnSet(where: LearnSetWhereUniqueInput!): LearnSet!
+
   updateLearnTerm(
     data: UpdateLearnTermInput!
     where: LearnTermWhereUniqueInput!

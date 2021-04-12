@@ -6,7 +6,7 @@ import mutation from '../../graphql/mutation/';
 
 const Set = ({ setid }) => {
   const { data, loading } = useQuery(query.SET, {
-    variables: { setid }
+    variables: { id: setid }
   });
 
   if (loading) return <p>...loading set</p>;
@@ -24,7 +24,7 @@ const Set = ({ setid }) => {
 
 const Buttons = ({ setid }) => {
   const [createLearnSet, { loading }] = useMutation(mutation.CREATE_LEARN_SET, {
-    variables: { setid },
+    variables: { id: setid },
     onCompleted: ({ createLearnSet: { id } }) => Router.push(`/learn/${id}`)
   });
 
@@ -42,7 +42,7 @@ const Terms = ({ setid }) => {
 
   const { data, error, loading } = useQuery(query.SORTED_TERMS, {
     variables: {
-      setid,
+      id: setid,
       sortBy
     }
   });

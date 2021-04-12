@@ -19,8 +19,8 @@ export const LEARN_SETS = gql`
 `;
 
 export const LEARN_SET = gql`
-  query LEARN_SET($setid: ID!) {
-    learnSet(where: { id: $setid }) {
+  query LEARN_SET($id: ID!) {
+    learnSet(where: { id: $id }) {
       id
       title
       amount
@@ -39,8 +39,8 @@ export const LEARN_SET = gql`
 `;
 
 export const SORTED_LEARN_TERMS = gql`
-  query SORTED_LEARN_TERMS($setid: ID!, $sortBy: LearnTermOrderByInput!) {
-    learnTerms(where: { learnSet: { id: $setid } }, orderBy: $sortBy) {
+  query SORTED_LEARN_TERMS($id: ID!, $sortBy: LearnTermOrderByInput!) {
+    learnTerms(where: { learnSet: { id: $id } }, orderBy: $sortBy) {
       id
       spanish
       english

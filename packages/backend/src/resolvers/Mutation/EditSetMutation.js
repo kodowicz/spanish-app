@@ -2,6 +2,7 @@ const { forwardTo } = require('prisma-binding');
 const formatTerms = require('../../utils/formatTerms');
 const { MINTERMS, MAXTERMS, TITLELENGTH } = require('../../utils/variables');
 
+const updateEditSet = forwardTo('prisma');
 const updateEditTerm = forwardTo('prisma');
 const deleteEditTerm = forwardTo('prisma');
 
@@ -9,14 +10,6 @@ const createEditSet = async (_parent, { where }, context, info) => {
   const userid = context.request.userid;
   if (!userid) {
     throw new Error('You must be logged in to do that');
-  }
-
-  const user = await context.prisma.query.user(
-    { where: { id: userid } },
-    `{ editSet { id } }`
-  );
-  if (user.editSet) {
-    throw new Error('You are already updating the set');
   }
 
   const userOwnsSet = await context.prisma.exists.User({
@@ -80,59 +73,18 @@ const createEditSet = async (_parent, { where }, context, info) => {
   return editSet;
 };
 
-const updateEditSet = async (_parent, { data }, context, info) => {
-  const userid = context.request.userid;
-  if (!userid) {
-    throw new Error('You must be logged in to do that.');
-  }
-
-  const user = await context.prisma.query.user(
-    { where: { id: userid } },
-    `{ editSet { id } }`
-  );
-
-  const editSet = await context.prisma.mutation.updateEditSet(
-    {
-      where: {
-        id: user.editSet.id
-      },
-      data
-    },
-    info
-  );
-
-  return editSet;
-};
-
-const deleteEditSet = async (_parent, _args, context) => {
-  const userid = context.request.userid;
-
-  const user = await context.prisma.query.user(
-    {
-      where: {
-        id: userid
-      }
-    },
-    `{ editSet { id } }`
-  );
-
-  if (!user.editSet) {
-    return {
-      message: `There's no changes to delete`
-    };
-  }
-
+const deleteEditSet = async (_parent, { where }, context) => {
   await context.prisma.mutation.deleteManyEditTerms({
     where: {
       editSet: {
-        id: user.editSet.id
+        id: where.id
       }
     }
   });
 
   context.prisma.mutation.deleteEditSet({
     where: {
-      id: user.editSet.id
+      id: where.id
     }
   });
 
@@ -141,21 +93,19 @@ const deleteEditSet = async (_parent, _args, context) => {
   };
 };
 
-const createEditTerm = async (_parent, _args, context, info) => {
+const createEditTerm = async (_parent, { where }, context, info) => {
   const userid = context.request.userid;
 
-  const user = await context.prisma.query.user(
-    { where: { id: userid } },
+  const editSet = await context.prisma.query.editSet(
+    { where: { id: where.id } },
     `{
-      editSet {
+      editTerms {
         id
-        editTerms {
-          id
-        }
       }
     }`
   );
-  if (user.editSet.editTerms.length >= MAXTERMS) {
+
+  if (editSet.editTerms.length >= MAXTERMS) {
     throw new Error(`You've already reached the limit of terms`);
   }
 
@@ -164,7 +114,7 @@ const createEditTerm = async (_parent, _args, context, info) => {
       data: {
         editSet: {
           connect: {
-            id: user.editSet.id
+            id: where.id
           }
         }
       }

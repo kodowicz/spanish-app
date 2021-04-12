@@ -10,16 +10,16 @@ export const CREATE_SET = gql`
 `;
 
 export const UPDATE_SET = gql`
-  mutation UPDATE_SET {
-    updateSet {
+  mutation UPDATE_SET($id: ID!) {
+    updateSet(where: { id: $id }) {
       id
     }
   }
 `;
 
 export const DELETE_SET = gql`
-  mutation DELETE_SET($setid: ID!) {
-    deleteSet(where: { id: $setid }) {
+  mutation DELETE_SET($id: ID!) {
+    deleteSet(where: { id: $id }) {
       message
     }
   }

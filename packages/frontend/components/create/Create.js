@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Router from 'next/router';
 import { useQuery, useMutation } from '@apollo/client';
 import query from '../../graphql/query/';
@@ -17,7 +17,6 @@ const DraftSet = () => {
   const [updateDraftSet] = useMutation(mutation.UPDATE_DRAFT_SET, {
     variables: { title }
   });
-
   const [createLearnSet, createLearnSetPayload] = useMutation(
     mutation.CREATE_LEARN_SET,
     {
@@ -33,7 +32,7 @@ const DraftSet = () => {
   const [createSet, createSetPayload] = useMutation(mutation.CREATE_SET, {
     onCompleted: ({ createSet }) => {
       createLearnSet({
-        variables: { setid: createSet.id }
+        variables: { id: createSet.id }
       });
     }
   });
@@ -80,7 +79,7 @@ const DraftSet = () => {
 
   async function handleCreateSet() {
     try {
-      const { data } = await updateDraftSet();
+      await updateDraftSet();
       createSet();
     } catch (e) {
       setError(e);

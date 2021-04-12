@@ -27,8 +27,8 @@ export const SEARCH_SETS = gql`
 `;
 
 export const SET = gql`
-  query SET($setid: ID!) {
-    set(where: { id: $setid }) {
+  query SET($id: ID!) {
+    set(where: { id: $id }) {
       id
       title
       amount
@@ -40,8 +40,8 @@ export const SET = gql`
 `;
 
 export const SORTED_TERMS = gql`
-  query SORTED_TERMS($setid: ID!, $sortTerms: TermOrderByInput) {
-    terms(orderBy: $sortTerms, where: { set: { id: $setid } }) {
+  query SORTED_TERMS($id: ID!, $sortTerms: TermOrderByInput) {
+    terms(orderBy: $sortTerms, where: { set: { id: $id } }) {
       id
       spanish
       english

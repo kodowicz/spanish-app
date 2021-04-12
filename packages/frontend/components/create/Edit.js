@@ -4,62 +4,87 @@ import { useQuery, useMutation } from '@apollo/client';
 import query from '../../graphql/query/';
 import mutation from '../../graphql/mutation/';
 
-const EditSet = ({ setid }) => {
+const EditSet = ({ editid }) => {
   const [title, setTitle] = useState('');
+  const [setid, setSetid] = useState('');
+  const [learnid, setLearnid] = useState('');
 
   const { data, loading } = useQuery(query.EDIT_SET, {
+    variables: { id: editid },
     fetchPolicy: 'network-only',
-    onCompleted: ({ editSet }) => setTitle(editSet.title)
+    onCompleted: ({ editSet }) => {
+      const {
+        set,
+        author: { learnSets }
+      } = editSet;
+      const learnSet = learnSets.filter(
+        learnSet => learnSet.set.id == set.id
+      )[0];
+
+      setSetid(set.id);
+      setLearnid(learnSet.id);
+      setTitle(editSet.title);
+    }
   });
 
   const [updateEditSet] = useMutation(mutation.UPDATE_EDIT_SET);
   const [deleteEditSet] = useMutation(mutation.DELETE_EDIT_SET);
   const [updateSet, updateSetPayload] = useMutation(mutation.UPDATE_SET, {
+    variables: { id: setid },
     refetchQueries: [
       {
         query: query.LEARN_SET,
-        variables: { setid }
+        variables: { id: learnid }
       },
       {
         query: query.SORTED_LEARN_TERMS,
         variables: {
-          setid,
+          id: learnid,
           sortBy: 'createdAt_ASC'
         }
       }
     ],
-    onCompleted: () => Router.push(`/study/${setid}`)
+    onCompleted: () => Router.push(`/study/${learnid}`)
   });
   const [deleteSet, deleteSetPayload] = useMutation(mutation.DELETE_SET, {
-    variables: {
-      setid: data?.editSet?.set?.id
-    },
+    variables: { id: setid },
     refetchQueries: [{ query: query.LEARN_SETS }],
     onCompleted: () => Router.push('/')
   });
 
   useEffect(() => {
-    return () => deleteEditSet();
+    return () => deleteEditSet({ variables: { id: editid } });
   }, []);
-
-  function handleUpdateEditSet() {
-    updateEditSet({
-      variables: { title }
-    });
-  }
 
   async function handleUpdateSet() {
     try {
-      await updateEditSet({
-        variables: { title }
-      });
+      await handleUpdateEditSet();
       updateSet();
     } catch (e) {
       throw new Error(e);
     }
   }
 
-  if (loading) <p>...loading edit set</p>;
+  function handleUpdateEditSet() {
+    updateEditSet({
+      variables: {
+        id: editid,
+        title
+      }
+    });
+  }
+
+  async function handleDeleteSet() {
+    try {
+      await deleteEditSet({ variables: { id: editid } });
+      deleteSet();
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  if (loading) return <p>...loading edit set</p>;
+
   return (
     <>
       {updateSetPayload.loading && <p>updating the set...</p>}
@@ -67,29 +92,33 @@ const EditSet = ({ setid }) => {
       <h1>edit set</h1>
       <input
         value={title}
-        onChange={({ target }) => setTitle(target.value)}
         onBlur={handleUpdateEditSet}
+        onChange={({ target }) => setTitle(target.value)}
       />
       <div>
-        <button onClick={() => deleteSet()}>delete</button>
+        <button onClick={handleDeleteSet}>delete</button>
         <button onClick={handleUpdateSet}>save</button>
       </div>
-      <EditTerms />
+      <EditTerms editid={editid} />
     </>
   );
 };
 
-const EditTerms = () => {
+const EditTerms = ({ editid }) => {
   const { data, error, loading } = useQuery(query.EDIT_TERMS, {
+    variables: { id: editid },
     fetchPolicy: 'network-only'
   });
+
   const [createEditTerm] = useMutation(mutation.CREATE_EDIT_TERM, {
+    variables: { id: editid },
     update: createEditTermCache
   });
 
   function createEditTermCache(cache, { data }) {
     const { editTerms } = cache.readQuery({
-      query: query.EDIT_TERMS
+      query: query.EDIT_TERMS,
+      variables: { id: editid }
     });
 
     const newEditTerm = {
@@ -101,6 +130,7 @@ const EditTerms = () => {
 
     cache.writeQuery({
       query: query.EDIT_TERMS,
+      variables: { id: editid },
       data: {
         editTerms: [...editTerms, newEditTerm]
       }
@@ -112,7 +142,7 @@ const EditTerms = () => {
     <div>
       {data.editTerms.map(term => (
         <div key={term.id}>
-          <EditTerm term={term} />
+          <EditTerm editid={editid} term={term} />
         </div>
       ))}
       <button onClick={() => createEditTerm()}>add term</button>
@@ -120,7 +150,7 @@ const EditTerms = () => {
   );
 };
 
-const EditTerm = ({ term }) => {
+const EditTerm = ({ editid, term }) => {
   const [state, setState] = useState(term);
   const [updateEditTerm] = useMutation(mutation.UPDATE_EDIT_TERM);
   const [deleteEditTerm] = useMutation(mutation.DELETE_EDIT_TERM);
@@ -142,13 +172,15 @@ const EditTerm = ({ term }) => {
 
   function deleteEditTermCache(cache, { data }) {
     const { editTerms } = cache.readQuery({
-      query: query.EDIT_TERMS
+      query: query.EDIT_TERMS,
+      variables: { id: editid }
     });
     const deletedTerm = data.deleteEditTerm.id;
     const filtredTerms = [...editTerms].filter(term => term.id !== deletedTerm);
 
     cache.writeQuery({
       query: query.EDIT_TERMS,
+      variables: { id: editid },
       data: {
         editTerms: filtredTerms
       }

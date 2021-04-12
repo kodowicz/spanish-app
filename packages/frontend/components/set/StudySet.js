@@ -4,9 +4,9 @@ import { useQuery, useMutation } from '@apollo/client';
 import query from '../../graphql/query/';
 import mutation from '../../graphql/mutation/';
 
-const StudySet = ({ setid, userid }) => {
+const StudySet = ({ learnid, userid }) => {
   const { data, loading } = useQuery(query.LEARN_SET, {
-    variables: { setid }
+    variables: { id: learnid }
   });
 
   if (loading) return <p>...loading set</p>;
@@ -20,18 +20,18 @@ const StudySet = ({ setid, userid }) => {
       <p>{learnSet.author.name}</p>
       <p>{learnSet.knowledge}%</p>
       {owner ? (
-        <OwnerButtons setid={setid} editid={learnSet.set.id} />
+        <OwnerButtons learnid={learnid} setid={learnSet.set.id} />
       ) : (
-        <StudyButtons setid={setid} userid={userid} />
+        <StudyButtons learnid={learnid} userid={userid} />
       )}
-      <Terms setid={setid} />
+      <Terms setid={learnid} />
     </div>
   );
 };
 
-const StudyButtons = ({ setid, userid }) => {
+const StudyButtons = ({ learnid, userid }) => {
   const [deleteLearnSet, { loading }] = useMutation(mutation.DELETE_LEARN_SET, {
-    variables: { setid },
+    variables: { id: learnid },
     refetchQueries: [
       { query: query.LEARN_SETS },
       { query: query.SETS, variables: { userid } }
@@ -44,15 +44,17 @@ const StudyButtons = ({ setid, userid }) => {
   return (
     <div>
       <button onClick={() => deleteLearnSet()}>remove set</button>
-      <button onClick={() => Router.push(`/learn/${setid}`)}>study set</button>
+      <button onClick={() => Router.push(`/learn/${learnid}`)}>
+        study set
+      </button>
     </div>
   );
 };
 
-const OwnerButtons = ({ setid, editid }) => {
+const OwnerButtons = ({ learnid, setid }) => {
   const [createEditSet, { loading }] = useMutation(mutation.CREATE_EDIT_SET, {
-    variables: { setid: editid },
-    onCompleted: () => Router.push(`/edit/${setid}`)
+    variables: { id: setid },
+    onCompleted: ({ createEditSet }) => Router.push(`/edit/${createEditSet.id}`)
   });
 
   if (loading) return <p>...creating edit set</p>;
@@ -60,7 +62,9 @@ const OwnerButtons = ({ setid, editid }) => {
   return (
     <div>
       <button onClick={() => createEditSet()}>edit set</button>
-      <button onClick={() => Router.push(`/learn/${setid}`)}>study set</button>
+      <button onClick={() => Router.push(`/learn/${learnid}`)}>
+        study set
+      </button>
     </div>
   );
 };
@@ -71,7 +75,7 @@ const Terms = ({ setid }) => {
 
   const { data, error, loading } = useQuery(query.SORTED_LEARN_TERMS, {
     variables: {
-      setid,
+      id: setid,
       sortBy
     }
   });

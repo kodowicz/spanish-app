@@ -62,56 +62,64 @@ const createSet = async (_parent, _args, context, info) => {
   return set;
 };
 
-const updateSet = async (_parent, _args, context, info) => {
+const updateSet = async (_parent, { where }, context, info) => {
   const userid = context.request.userid;
   if (!userid) {
     throw new Error('You have to be logged in to do that');
   }
 
-  const user = await context.prisma.query.user(
-    { where: { id: userid } },
+  const editSets = await context.prisma.query.editSets(
+    {
+      where: {
+        set: { id: where.id },
+        author: { id: userid }
+      }
+    },
     `{
-      editSet {
-        id
-        title
-        set {
+      id
+      title
+      editTerms {
+        spanish
+        english
+        term {
           id
-          title
-          terms {
-            id
-            spanish
-            english
-          }
-        }
-        editTerms {
           spanish
           english
-          term {
-            id
-            spanish
-            english
-          }
         }
       }
     }`
   );
+  const editSet = editSets[0];
 
-  if (!user.editSet) {
-    throw new Error(`There's no set tu update`);
+  const set = await context.prisma.query.set(
+    { where: { id: where.id } },
+    `{
+      id
+      title
+      terms {
+        id
+        spanish
+        english
+      }
+    }`
+  );
+
+  if (!editSet) {
+    throw new Error(`There's no set to update`);
   }
-  if (!user.editSet.title) {
+  if (!editSet.title) {
     throw new Error('Insert the title');
   }
-  if (user.editSet.title.length < TITLELENGTH) {
+  if (editSet.title.length < TITLELENGTH) {
     throw new Error('The title is too short');
   }
 
-  const formatedTerms = formatTerms(user.editSet.editTerms);
+  const formatedTerms = formatTerms(editSet.editTerms);
   if (formatedTerms.length < MINTERMS) {
     throw new Error('You have to create at least 4 terms');
   }
 
-  const termsToDelete = user.editSet.set.terms.filter(
+  const termsToDelete = set.terms.filter(
     term =>
       !formatedTerms.find(editTerm => {
         if (editTerm.term) {
@@ -132,7 +140,7 @@ const updateSet = async (_parent, _args, context, info) => {
     {
       where: {
         set: {
-          id: user.editSet.set.id
+          id: set.id
         }
       }
     },
@@ -175,7 +183,7 @@ const updateSet = async (_parent, _args, context, info) => {
     formatedTerms.flatMap(async editTerm => {
       if (!editTerm.term) {
         const terms = await context.prisma.query.learnSets(
-          { where: { set: { id: user.editSet.set.id } } },
+          { where: { set: { id: set.id } } },
           `{ id }`
         );
         if (terms) {
@@ -194,7 +202,7 @@ const updateSet = async (_parent, _args, context, info) => {
     let updateManyLearnTerms = [];
     let createManyLearnTerms = [];
 
-    // update LearnTerm if Term exists of create a new one
+    // update LearnTerm if Term exists or create a new one
     if (termid) {
       learnTermsToUpdate
         .filter(term => term)
@@ -269,7 +277,7 @@ const updateSet = async (_parent, _args, context, info) => {
         id: learnSet.id
       },
       data: {
-        title: user.editSet.title,
+        title: editSet.title,
         amount: formatedTerms.length,
         learnTerms: {
           delete: deleteManyLearnTerms
@@ -278,10 +286,10 @@ const updateSet = async (_parent, _args, context, info) => {
     };
   });
 
-  const set = await context.prisma.mutation.updateSet(
+  const preUpdate = await context.prisma.mutation.updateSet(
     {
       data: {
-        title: user.editSet.title,
+        title: editSet.title,
         amount: formatedTerms.length,
         terms: {
           deleteMany: deleteManyTerms,
@@ -292,7 +300,7 @@ const updateSet = async (_parent, _args, context, info) => {
         }
       },
       where: {
-        id: user.editSet.set.id
+        id: set.id
       }
     },
     `{
@@ -306,16 +314,18 @@ const updateSet = async (_parent, _args, context, info) => {
     }`
   );
 
-  const updateLearnSetsKnowledge = set.learnSets.map(({ id, learnTerms }) => {
-    const amount = formatedTerms.length;
-    const sumRatio = learnTerms.reduce((sum, { ratio }) => sum + ratio, 0);
-    const knowledge = Math.round((sumRatio / (amount * MAXRATIO)) * 100);
+  const updateLearnSetsKnowledge = preUpdate.learnSets.map(
+    ({ id, learnTerms }) => {
+      const amount = formatedTerms.length;
+      const sumRatio = learnTerms.reduce((sum, { ratio }) => sum + ratio, 0);
+      const knowledge = Math.round((sumRatio / (amount * MAXRATIO)) * 100);
 
-    return {
-      where: { id },
-      data: { knowledge }
-    };
-  });
+      return {
+        where: { id },
+        data: { knowledge }
+      };
+    }
+  );
 
   const updatedSet = await context.prisma.mutation.updateSet(
     {
@@ -325,7 +335,7 @@ const updateSet = async (_parent, _args, context, info) => {
         }
       },
       where: {
-        id: user.editSet.set.id
+        id: set.id
       }
     },
     info
@@ -349,11 +359,6 @@ const deleteSet = async (_parent, { where }, context) => {
   if (!userOwnsSet) {
     throw new Error(`You're not permitted to delete sets you do not own`);
   }
-
-  const user = await context.prisma.query.user(
-    { where: { id: userid } },
-    `{ editSet { id } }`
-  );
 
   await context.prisma.mutation.deleteManyLearnTerms({
     where: {
